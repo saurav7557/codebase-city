@@ -1,26 +1,121 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f0ece0;
+  --foreground: #1c1917;
+  --foreground-muted: #78716c;
+  --surface: #faf8f4;
+  --surface-muted: #f5f2eb;
+  --border: #ddd6c8;
+  --border-strong: #a8a29e;
+  --accent: #6366f1;
+  --status-active: #059669;
+  --status-building: #d97706;
+  --status-planned: #78716c;
+  --shadow-panel: 0 1px 3px rgba(28, 25, 23, 0.06), 0 8px 24px rgba(28, 25, 23, 0.08);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-geist);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html,
+body,
+#__next {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
+}
+
+.font-mono {
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+}
+
+/* Smooth cursor changes for 3D interactions */
+canvas {
+  display: block;
+  touch-action: none;
+}
+
+/* Status indicator dot */
+.status-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--status-active);
+  flex-shrink: 0;
+}
+
+.status-dot--pulse {
+  animation: statusPulse 2.5s ease-in-out infinite;
+}
+
+@keyframes statusPulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
+}
+
+/* Panel entrance animations */
+@keyframes panelEnter {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes panelBackdropEnter {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.panel-enter {
+  animation: panelEnter 0.22s ease-out both;
+}
+
+.panel-backdrop-enter {
+  animation: panelBackdropEnter 0.18s ease-out both;
+}
+
+/* Respect reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .panel-enter,
+  .panel-backdrop-enter {
+    animation: none;
+  }
+
+  .status-dot--pulse {
+    animation: none;
+  }
+}
+
+/* Safe area padding for mobile bottom sheets */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .panel-enter.fixed.inset-x-0.bottom-0 {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
 }
