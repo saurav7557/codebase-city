@@ -101,7 +101,7 @@ export function CityScene({ selectedId, onSelect }: CitySceneProps) {
           near: 0.1,
           far: 200,
         }}
-        shadows={THREE.PCFShadowMap}
+        shadows="soft"
         gl={{
           antialias: true,
           alpha: false,

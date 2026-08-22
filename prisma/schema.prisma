@@ -1,0 +1,128 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model District {
+  id        String         @id
+  name      String
+  slug      String         @unique
+  description String?
+  type      String
+  color     String
+  centerX   Float
+  centerZ   Float
+  radius    Float
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  projects  Project[]
+  buildings CityBuilding[]
+
+  @@index([type])
+}
+
+model Project {
+  id          String              @id
+  name        String
+  slug        String              @unique
+  description String
+  category    String
+  status      String
+  districtId  String
+  githubUrl   String?
+  liveUrl     String?
+  featured    Boolean             @default(false)
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+  district    District            @relation(fields: [districtId], references: [id], onDelete: Restrict)
+  technologies ProjectTechnology[]
+  building    CityBuilding?
+
+  @@index([districtId])
+  @@index([category])
+  @@index([status])
+}
+
+model Technology {
+  id       String              @id
+  name     String
+  slug     String              @unique
+  projects ProjectTechnology[]
+  buildings CityBuildingTechnology[]
+}
+
+model ProjectTechnology {
+  projectId    String
+  technologyId String
+  project      Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  technology   Technology @relation(fields: [technologyId], references: [id], onDelete: Cascade)
+
+  @@id([projectId, technologyId])
+}
+
+model Achievement {
+  id          String   @id
+  title       String
+  description String
+  date        DateTime
+  category    String
+  url         String?
+  createdAt   DateTime @default(now())
+
+  @@index([date])
+  @@index([category])
+}
+
+model EngineeringEvent {
+  id          String   @id
+  type        String
+  title       String
+  description String
+  source      String
+  sourceId    String?
+  metadata    Json?
+  occurredAt  DateTime
+  createdAt   DateTime @default(now())
+
+  @@index([type])
+  @@index([occurredAt])
+  @@index([source, sourceId])
+}
+
+model CityBuilding {
+  id          String   @id
+  projectId   String?  @unique
+  districtId  String
+  name        String
+  description String
+  type        String
+  status      String
+  positionX   Float
+  positionY   Float    @default(0)
+  positionZ   Float
+  height      Float
+  color       String
+  accentColor String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  project     Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  district    District @relation(fields: [districtId], references: [id], onDelete: Restrict)
+  technologies CityBuildingTechnology[]
+
+  @@index([districtId])
+  @@index([type])
+  @@index([status])
+}
+
+model CityBuildingTechnology {
+  buildingId   String
+  technologyId String
+  building     CityBuilding @relation(fields: [buildingId], references: [id], onDelete: Cascade)
+  technology   Technology   @relation(fields: [technologyId], references: [id], onDelete: Cascade)
+
+  @@id([buildingId, technologyId])
+}
