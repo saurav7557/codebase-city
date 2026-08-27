@@ -93,6 +93,33 @@ model EngineeringEvent {
   @@index([source, sourceId])
 }
 
+model GitHubRepository {
+  id              String   @id @default(cuid())
+  externalId      String   @unique
+  ownerLogin      String
+  name            String
+  fullName        String   @unique
+  description     String?
+  url             String
+  homepage        String?
+  primaryLanguage String?
+  topics          String[]
+  stars           Int      @default(0)
+  forks           Int      @default(0)
+  githubCreatedAt DateTime
+  githubUpdatedAt DateTime
+  pushedAt        DateTime?
+  isFork          Boolean  @default(false)
+  isArchived      Boolean  @default(false)
+  visibility      String?
+  syncedAt        DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([ownerLogin])
+  @@index([githubUpdatedAt])
+}
+
 model CityBuilding {
   id          String   @id
   projectId   String?  @unique

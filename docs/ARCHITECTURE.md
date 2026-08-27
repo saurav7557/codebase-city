@@ -10,6 +10,16 @@ PostgreSQL → Prisma → src/lib/city-repository.ts → Route Handlers → futu
 
 `getCityData()` maps normalized database records to the existing `CityData` / `CityBuilding` / `CityDistrict` TypeScript contract. Its response deliberately preserves `district`, tuple `position`, colors, height, and technology labels expected by the 3D engine.
 
+## GitHub repository integration
+
+Phase 4A adds a separate server-only public GitHub layer:
+
+```text
+GitHub public REST API → src/github → GitHubRepository → /api/github/*
+```
+
+It is intentionally not connected to `EngineeringEvent`, projects, or city rendering. See `docs/GITHUB_INTEGRATION.md` for API, persistence, rate-limit, and future-pipeline details.
+
 ## Read API
 
 | Endpoint | Response |
