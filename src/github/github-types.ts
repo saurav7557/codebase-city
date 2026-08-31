@@ -18,6 +18,22 @@ export interface GitHubApiRepository {
   visibility?: string | null;
 }
 
+/** The subset of GitHub's commit payload used by the public REST integration. */
+export interface GitHubApiCommit {
+  sha: string;
+  html_url: string;
+  commit: {
+    message: string;
+    author: {
+      name: string;
+      date: string;
+    };
+  };
+  author: {
+    login: string;
+  } | null;
+}
+
 /** Stable application-level representation, isolated from GitHub's wire format. */
 export interface GitHubRepository {
   externalId: string;
@@ -43,4 +59,31 @@ export interface GitHubSyncSummary {
   created: number;
   updated: number;
   skipped: number;
+}
+
+/** Stable application-level representation of a GitHub commit. */
+export interface GitHubCommit {
+  sha: string;
+  url: string;
+  message: string;
+  authorLogin: string | null;
+  authorName: string | null;
+  committedAt: Date;
+}
+
+export interface GitHubEngineeringEventSyncSummary {
+  repositoriesFetched: number;
+  repositoriesCreated: number;
+  repositoriesUpdated: number;
+  commitsFetched: number;
+  eventsCreated: number;
+  eventsSkipped: number;
+}
+
+/**
+ * Extension point for the future bounded pull-request, issue, and release
+ * normalizers. Raw GitHub payloads stay separate from event application types.
+ */
+export interface GitHubActivityFetcher<TActivity> {
+  fetchRecent(repositoryFullName: string, maxPages: number): Promise<TActivity[]>;
 }

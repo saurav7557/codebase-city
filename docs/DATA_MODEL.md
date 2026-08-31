@@ -9,7 +9,8 @@ Codebase City uses PostgreSQL through Prisma. The 3D scene remains independent f
 - `Technology` is normalized and connected to projects through `ProjectTechnology`, whose composite primary key prevents duplicate project/technology links. `CityBuildingTechnology` covers the rare non-project building, such as the profile headquarters.
 - `CityBuilding` stores renderer-specific building placement and presentation data. Its `projectId` is optional so non-project buildings, such as the profile headquarters, do not require a fictional project record.
 - `Achievement` stores dated portfolio milestones. No achievement rows are seeded until a verified achievement is available.
-- `EngineeringEvent` is an append-oriented event log. `metadata` is JSON for source-specific payload details while the standard fields remain queryable.
+- `EngineeringEvent` is an append-oriented event log. `metadata` is JSON for source-specific payload details while the standard fields remain queryable. GitHub event identity is database-enforced with the unique tuple `(source, sourceId, type)`.
+- `AiAnalysis` is an auditable, provider-generated interpretation of one source entity. It stores the provider, model, stable input fingerprint, strict JSON result, numeric confidence, exact evidence, and timestamps. It intentionally has no relation that lets AI silently overwrite manually curated entities.
 
 ## Relationships
 
@@ -17,6 +18,7 @@ Codebase City uses PostgreSQL through Prisma. The 3D scene remains independent f
 District 1 ── * Project 1 ── * ProjectTechnology * ── 1 Technology
 District 1 ── * CityBuilding * ── 0..1 Project
 CityBuilding 1 ── * CityBuildingTechnology * ── 1 Technology (non-project buildings only)
+GitHubRepository / EngineeringEvent 1 ── * AiAnalysis (logical source mapping, audited by sourceType + sourceId)
 ```
 
 `CityBuilding` owns world positions (`positionX`, `positionY`, `positionZ`), height, and colors. Project technologies are read through the project relationship rather than duplicated on the building; only buildings with no project use the separate building-technology mapping.

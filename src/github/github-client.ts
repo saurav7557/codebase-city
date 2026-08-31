@@ -6,7 +6,9 @@ export type GitHubErrorCode =
   | "GITHUB_MALFORMED_RESPONSE"
   | "GITHUB_RATE_LIMITED"
   | "GITHUB_REQUEST_TIMEOUT"
-  | "GITHUB_USER_NOT_FOUND";
+  | "GITHUB_USER_NOT_FOUND"
+  | "GITHUB_FORBIDDEN"
+  | "GITHUB_REPOSITORY_EMPTY";
 
 export class GitHubClientError extends Error {
   constructor(
@@ -113,10 +115,26 @@ function createGitHubResponseError(response: Response): GitHubClientError {
     );
   }
 
+  if (response.status === 409) {
+    return new GitHubClientError(
+      "GITHUB_REPOSITORY_EMPTY",
+      409,
+      "GitHub repository has no commits yet.",
+    );
+  }
+
+  if (response.status === 403) {
+    return new GitHubClientError(
+      "GITHUB_FORBIDDEN",
+      403,
+      "GitHub denied this request.",
+    );
+  }
+
   return new GitHubClientError(
     "GITHUB_API_UNAVAILABLE",
     502,
-    "GitHub could not complete the repository request.",
+    "GitHub could not complete the request.",
   );
 }
 
