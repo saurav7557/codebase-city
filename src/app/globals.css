@@ -7,12 +7,18 @@
   --surface: #faf8f4;
   --surface-muted: #f5f2eb;
   --border: #ddd6c8;
+  --border-subtle: #e8e4d8;
   --border-strong: #a8a29e;
   --accent: #6366f1;
   --status-active: #059669;
   --status-building: #d97706;
   --status-planned: #78716c;
   --shadow-panel: 0 1px 3px rgba(28, 25, 23, 0.06), 0 8px 24px rgba(28, 25, 23, 0.08);
+  --shadow-nav: 1px 0 0 0 var(--border);
+  --shadow-log: -1px 0 0 0 var(--border);
+  /* Layout dimensions */
+  --nav-width: 200px;
+  --log-width: 320px;
 }
 
 @theme inline {
@@ -118,4 +124,110 @@ canvas {
   .panel-enter.fixed.inset-x-0.bottom-0 {
     padding-bottom: env(safe-area-inset-bottom);
   }
+}
+
+/* ── Stage 1 UI Shell ──────────────────────────────────────────────────────── */
+
+/*
+ * Blueprint grid dot pattern overlay on the canvas area.
+ * Radial-gradient dot at each 28px grid intersection — very subtle.
+ * Applied to the city canvas wrapper via .blueprint-grid class.
+ */
+.blueprint-grid::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  background-image: radial-gradient(
+    circle,
+    rgba(28, 25, 23, 0.065) 1px,
+    transparent 1px
+  );
+  background-size: 28px 28px;
+  background-position: 0 0;
+}
+
+/* Architectural nav slide-in from left */
+@keyframes navSlideIn {
+  from { opacity: 0; transform: translateX(-8px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* Log slide-in from right */
+@keyframes logSlideIn {
+  from { opacity: 0; transform: translateX(8px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* Log activity row pulse */
+@keyframes activityPulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.55; }
+}
+
+/* Bottom panel rise */
+@keyframes bottomPanelRise {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.nav-slide-in  { animation: navSlideIn  0.3s ease-out both; }
+.log-slide-in  { animation: logSlideIn  0.3s ease-out both; }
+.panel-rise    { animation: bottomPanelRise 0.35s ease-out both; }
+.activity-pulse { animation: activityPulse 3s ease-in-out infinite; }
+
+/* Engineering Log width collapse — smooth slide */
+.log-collapse-transition {
+  transition: width 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+}
+
+/* Nav / log top accent line — 2px graphite rule */
+.accent-line-top {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--foreground);
+  opacity: 0.82;
+}
+
+/* Nav active indicator bar */
+.nav-active-bar {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 2px;
+  height: 14px;
+  background: var(--foreground);
+  border-radius: 0 1px 1px 0;
+}
+
+/* Thin divider rule — architectural style */
+.rule-thin {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 0;
+}
+
+/* Mono metadata label */
+.meta-label {
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--foreground-muted);
+}
+
+/* Engineering log event row hover */
+.log-row:hover { background: var(--surface-muted); }
+
+/* Reduced motion overrides */
+@media (prefers-reduced-motion: reduce) {
+  .nav-slide-in, .log-slide-in, .panel-rise { animation: none; }
+  .activity-pulse { animation: none; }
+  .log-collapse-transition { transition: none; }
 }

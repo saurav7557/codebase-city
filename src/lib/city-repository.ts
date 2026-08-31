@@ -57,7 +57,13 @@ export async function getAchievements() {
 }
 
 export async function getEngineeringEvents() {
-  return prisma.engineeringEvent.findMany({ orderBy: { occurredAt: "desc" } });
+  const events = await prisma.engineeringEvent.findMany({ orderBy: { occurredAt: "desc" } });
+  return events.map(event => ({
+    id: event.id,
+    occurredAt: event.occurredAt.toISOString(),
+    summary: event.title,
+    category: event.type,
+  }));
 }
 
 function toCityDistrict(district: {

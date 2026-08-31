@@ -18,11 +18,17 @@ const MODE_CONTENT: Record<
       "Conversational interface for exploring systems, architecture decisions, and project context. Coming in a future phase.",
     status: "Module Pending",
   },
-  recruiter: {
+   recruiter: {
     title: "Recruiter Mode",
     description:
       "Structured view for hiring teams — role fit, project highlights, and interview scheduling. Coming in a future phase.",
     status: "Module Pending",
+  },
+  journey: {
+    title: "Engineering Journey",
+    description:
+      "A chronological view of engineering milestones, projects, and system evolution.",
+    status: "Module Active",
   },
 };
 

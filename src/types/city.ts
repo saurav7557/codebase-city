@@ -57,3 +57,16 @@ export interface CityData {
   buildings: CityBuilding[];
   districts: CityDistrict[];
 }
+
+/** Engineering Log event — sourced from /api/engineering-events in Phase 2+ */
+export interface EngineeringEvent {
+  id: string;
+  /** ISO timestamp */
+  occurredAt: string;
+  /** Short summary label */
+  summary: string;
+  /** Optional event category for future filtering */
+  category?: string;
+  /** Optional description */
+  description?: string;
+}

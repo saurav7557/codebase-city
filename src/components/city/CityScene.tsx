@@ -3,7 +3,6 @@
 import { Suspense, useCallback } from "react";
 import { Canvas } from "@react-three/fiber";
 import { Environment, AdaptiveDpr } from "@react-three/drei";
-import * as THREE from "three";
 
 import { cityData } from "@/data/city";
 import type { CityBuilding } from "@/types/city";

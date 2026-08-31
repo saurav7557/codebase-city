@@ -1,7 +1,7 @@
 import "server-only";
 
 import { AIValidationError, validateAIAnalysisResult } from "./ai-validation";
-import type { AIAnalysisContext, AIProvider, AIProviderResult } from "./ai-types";
+import type { AIAnalysisContext, AIAskContext, AIProvider, AIProviderResult, AIAskResult } from "./ai-types";
 
 const OPENAI_RESPONSES_URL = "https://api.openai.com/v1/responses";
 const REQUEST_TIMEOUT_MS = 45_000;
@@ -89,6 +89,79 @@ export class OpenAIProvider implements AIProvider {
       clearTimeout(timeout);
     }
   }
+
+  async ask(question: string, context: AIAskContext): Promise<AIAskResult> {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+
+    try {
+      const response = await fetch(OPENAI_RESPONSES_URL, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${this.apiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: this.model,
+          store: false,
+          instructions:
+            "You are a helpful assistant answering questions about an engineering portfolio. " +
+            "Use ONLY the provided context about projects, technologies, districts, and AI insights. " +
+            "Do not invent information. If the context doesn't contain enough information to answer the question, say so. " +
+            "Provide specific evidence from the context when possible. Be concise and direct.",
+          input: JSON.stringify({ question, ...context }),
+          max_output_tokens: 1000,
+          text: {
+            format: {
+              type: "json_schema",
+              name: "portfolio_answer",
+              strict: true,
+              schema: ASK_JSON_SCHEMA,
+            },
+          },
+        }),
+        signal: controller.signal,
+      });
+
+      const body = await parseResponse(response);
+      if (!response.ok) {
+        throw new AIProviderRequestError();
+      }
+
+      const outputText = getOutputText(body);
+      let parsed: unknown;
+      try {
+        parsed = JSON.parse(outputText);
+      } catch {
+        throw new AIValidationError();
+      }
+
+      if (!isRecord(parsed) ||
+          typeof parsed.answer !== "string" ||
+          !Array.isArray(parsed.evidence) ||
+          typeof parsed.confidence !== "number" ||
+          !Array.isArray(parsed.sources)) {
+        throw new AIValidationError();
+      }
+
+      return {
+        answer: parsed.answer,
+        evidence: parsed.evidence,
+        confidence: parsed.confidence,
+        sources: parsed.sources,
+      };
+    } catch (error: unknown) {
+      if (error instanceof AIProviderRequestError || error instanceof AIValidationError) {
+        throw error;
+      }
+      if (error instanceof DOMException && error.name === "AbortError") {
+        throw new AIProviderRequestError("AI provider did not respond before the request timeout.");
+      }
+      throw new AIProviderRequestError();
+    } finally {
+      clearTimeout(timeout);
+    }
+  }
 }
 
 const ANALYSIS_JSON_SCHEMA = {
@@ -113,6 +186,18 @@ const ANALYSIS_JSON_SCHEMA = {
     confidence: { type: "number", minimum: 0, maximum: 1 },
     summary: { type: "string" },
     evidence: { type: "array", items: { type: "string" } },
+  },
+} as const;
+
+const ASK_JSON_SCHEMA = {
+  type: "object",
+  additionalProperties: false,
+  required: ["answer", "evidence", "confidence", "sources"],
+  properties: {
+    answer: { type: "string" },
+    evidence: { type: "array", items: { type: "string" } },
+    confidence: { type: "number", minimum: 0, maximum: 1 },
+    sources: { type: "array", items: { type: "string" } },
   },
 } as const;
 
