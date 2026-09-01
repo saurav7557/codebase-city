@@ -35,6 +35,26 @@ export type AIProviderResult = {
 };
 
 export type AIAskContext = {
+  selectedBuilding?: {
+    building: {
+      id: string;
+      name: string;
+      description: string;
+      type: string;
+      status: string;
+      district: string;
+    };
+    project: {
+      id: string;
+      name: string;
+      description: string;
+      category: string;
+      status: string;
+      district: string;
+      technologies: string[];
+    } | null;
+  } | null;
+
   projects: Array<{
     name: string;
     description: string;
@@ -43,8 +63,14 @@ export type AIAskContext = {
     technologies: string[];
     status: string;
   }>;
+
   technologies: string[];
-  districts: Array<{ name: string; type: string }>;
+
+  districts: Array<{
+    name: string;
+    type: string;
+  }>;
+
   aiInsights: Array<{
     confidence: number;
     result: unknown;
@@ -61,8 +87,15 @@ export type AIAskResult = {
 export interface AIProvider {
   readonly name: string;
   readonly model: string;
-  analyzeRepository(context: AIAnalysisContext): Promise<AIProviderResult>;
-  ask?(question: string, context: AIAskContext): Promise<AIAskResult>;
+
+  analyzeRepository(
+    context: AIAnalysisContext,
+  ): Promise<AIProviderResult>;
+
+  ask?(
+    question: string,
+    context: AIAskContext,
+  ): Promise<AIAskResult>;
 }
 
 export type AIProviderStatus = {

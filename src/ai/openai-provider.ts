@@ -58,8 +58,16 @@ export class OpenAIProvider implements AIProvider {
 
       const body = await parseResponse(response);
       if (!response.ok) {
-        throw new AIProviderRequestError();
-      }
+  console.error("OpenAI API error:", {
+    status: response.status,
+    statusText: response.statusText,
+    body,
+  });
+
+  throw new AIProviderRequestError(
+    `OpenAI request failed with status ${response.status}: ${response.statusText}`,
+  );
+}
 
       const outputText = getOutputText(body);
       let parsed: unknown;
@@ -124,9 +132,18 @@ export class OpenAIProvider implements AIProvider {
       });
 
       const body = await parseResponse(response);
-      if (!response.ok) {
-        throw new AIProviderRequestError();
-      }
+
+if (!response.ok) {
+  console.error("OPENAI ASK ERROR", {
+    status: response.status,
+    statusText: response.statusText,
+    body,
+  });
+
+  throw new AIProviderRequestError(
+    `OpenAI request failed: ${response.status} ${response.statusText}`,
+  );
+}
 
       const outputText = getOutputText(body);
       let parsed: unknown;

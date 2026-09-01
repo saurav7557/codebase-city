@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { SystemButton } from "@/components/ui/SystemButton";
 
+
 // ─────────────────────────────────────────────────────────────────────────────
 // AskCityAI — Conversational interface for portfolio questions
 //
@@ -18,12 +19,19 @@ interface Message {
   sources?: string[];
 }
 
+import type { CityBuilding } from "@/types/city";
+
 interface AskCityAIProps {
   isOpen: boolean;
   onClose: () => void;
+  building?: CityBuilding | null;
 }
 
-export function AskCityAI({ isOpen, onClose }: AskCityAIProps) {
+export function AskCityAI({
+  isOpen,
+  onClose,
+  building,
+}: AskCityAIProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -57,7 +65,10 @@ export function AskCityAI({ isOpen, onClose }: AskCityAIProps) {
       const response = await fetch("/api/ai/ask", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question: userMessage }),
+        body: JSON.stringify({
+  question: userMessage,
+  buildingId: building?.id,
+}),
       });
 
       if (!response.ok) {
