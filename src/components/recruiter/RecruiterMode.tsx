@@ -19,13 +19,37 @@ interface RecruiterData {
     description: string;
     technologies: string[];
     status: string;
+    category: string;
+    district: string;
   }>;
   technologies: string[];
   githubActivity: {
     repositories: number;
     commits: number;
+    recentActivity: Array<{
+      month: string;
+      count: number;
+    }>;
     languages: string[];
   };
+  portfolioIntelligence: {
+    projectCount: number;
+    technologyCount: number;
+    districtCount: number;
+    engineeringEventCount: number;
+    repositoryCount: number;
+    achievementCount: number;
+    aiAnalysisCount: number;
+    highConfidenceAnalysisCount: number;
+    featuredProjectCount: number;
+    projectCategoryCount: number;
+    majorDomains: string[];
+  };
+  achievements: Array<{
+    title: string;
+    date: string;
+    category: string;
+  }>;
   openSource: boolean;
   aiBackendExperience: boolean;
 }
@@ -41,10 +65,7 @@ export function RecruiterMode({ isOpen, onClose }: RecruiterModeProps) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!isOpen) {
-      setData(null);
-      return;
-    }
+    if (!isOpen) return;
 
     async function fetchRecruiterData() {
       setLoading(true);
@@ -55,12 +76,11 @@ export function RecruiterMode({ isOpen, onClose }: RecruiterModeProps) {
           const recruiterData = await response.json();
           setData(recruiterData);
         } else {
-          // Use fallback data if API not available
-          setData(getFallbackData());
+          setError("Failed to load recruiter profile");
         }
       } catch (err) {
         console.error("Failed to fetch recruiter data:", err);
-        setData(getFallbackData());
+        setError("Failed to load recruiter profile");
       } finally {
         setLoading(false);
       }
@@ -175,6 +195,9 @@ export function RecruiterMode({ isOpen, onClose }: RecruiterModeProps) {
                       <p className="text-[10px] leading-relaxed text-[var(--foreground-muted)] mb-2">
                         {project.description}
                       </p>
+                      <p className="font-mono text-[8px] tracking-[0.08em] text-[var(--foreground-muted)] uppercase mb-2">
+                        {project.category} · {project.district}
+                      </p>
                       <div className="flex flex-wrap gap-1">
                         {project.technologies.map((tech) => (
                           <span
@@ -230,7 +253,7 @@ export function RecruiterMode({ isOpen, onClose }: RecruiterModeProps) {
                       {data.githubActivity.commits}
                     </p>
                     <p className="font-mono text-[8px] tracking-[0.1em] text-[var(--foreground-muted)] uppercase">
-                      Commits
+                      Events
                     </p>
                   </div>
                   <div className="border border-[var(--border)] bg-[var(--surface-muted)] p-2 text-center">
@@ -252,9 +275,81 @@ export function RecruiterMode({ isOpen, onClose }: RecruiterModeProps) {
                     </span>
                   ))}
                 </div>
+                <div className="mt-3 space-y-1">
+                  {data.githubActivity.recentActivity.map((activity) => (
+                    <p
+                      key={activity.month}
+                      className="font-mono text-[8px] tracking-[0.08em] text-[var(--foreground-muted)] uppercase"
+                    >
+                      {activity.month}: {activity.count} events
+                    </p>
+                  ))}
+                </div>
               </div>
 
               <hr className="rule-thin" />
+
+              <div>
+                <p className="font-mono text-[9px] tracking-[0.28em] text-[var(--foreground-muted)] uppercase mb-3">
+                  PORTFOLIO INTELLIGENCE
+                </p>
+                <div className="grid grid-cols-2 gap-2">
+                  <Metric label="Projects" value={data.portfolioIntelligence.projectCount} />
+                  <Metric label="Tech Stack" value={data.portfolioIntelligence.technologyCount} />
+                  <Metric label="Districts" value={data.portfolioIntelligence.districtCount} />
+                  <Metric label="Categories" value={data.portfolioIntelligence.projectCategoryCount} />
+                  <Metric label="Repositories" value={data.portfolioIntelligence.repositoryCount} />
+                  <Metric label="Events" value={data.portfolioIntelligence.engineeringEventCount} />
+                  <Metric label="Achievements" value={data.portfolioIntelligence.achievementCount} />
+                  <Metric label="AI Analyses" value={data.portfolioIntelligence.aiAnalysisCount} />
+                </div>
+                {data.portfolioIntelligence.majorDomains.length > 0 && (
+                  <div className="mt-3">
+                    <p className="font-mono text-[8px] tracking-[0.12em] text-[var(--foreground-muted)] uppercase mb-1">
+                      Major Domains
+                    </p>
+                    <div className="flex flex-wrap gap-1">
+                      {data.portfolioIntelligence.majorDomains.map((domain) => (
+                        <span
+                          key={domain}
+                          className="inline-block border border-[var(--border-subtle)] bg-[var(--surface)] px-1.5 py-0.5 font-mono text-[8px] tracking-[0.06em] text-[var(--foreground-muted)] uppercase"
+                        >
+                          {domain}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <hr className="rule-thin" />
+
+              <div>
+                <p className="font-mono text-[9px] tracking-[0.28em] text-[var(--foreground-muted)] uppercase mb-3">
+                  ACHIEVEMENTS
+                </p>
+                <div className="space-y-2">
+                  {data.achievements.length > 0 ? (
+                    data.achievements.slice(0, 4).map((achievement) => (
+                      <div
+                        key={`${achievement.title}-${achievement.date}`}
+                        className="border border-[var(--border)] bg-[var(--surface-muted)] p-2"
+                      >
+                        <p className="font-mono text-[9px] tracking-[0.08em] text-[var(--foreground)] uppercase">
+                          {achievement.title}
+                        </p>
+                        <p className="font-mono text-[8px] tracking-[0.08em] text-[var(--foreground-muted)] uppercase">
+                          {new Date(achievement.date).toLocaleDateString("en-GB")} · {achievement.category}
+                        </p>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="font-mono text-[9px] text-[var(--foreground-muted)] uppercase">
+                      No achievements available
+                    </p>
+                  )}
+                </div>
+              </div>
 
               {/* Specializations */}
               <div>
@@ -290,7 +385,7 @@ export function RecruiterMode({ isOpen, onClose }: RecruiterModeProps) {
                 <SystemButton
                   variant="primary"
                   className="w-full"
-                  onClick={() => window.open('mailto:contact@example.com', '_blank')}
+                  onClick={() => window.open("mailto:sauravkumar7557.dev@gmail.com", "_blank")}
                   aria-label="Contact candidate"
                 >
                   CONTACT
@@ -318,43 +413,11 @@ export function RecruiterMode({ isOpen, onClose }: RecruiterModeProps) {
   );
 }
 
-function getFallbackData(): RecruiterData {
-  return {
-    name: "Saurav Kumar",
-    role: "Full-Stack Engineer",
-    domains: ["Backend Systems", "AI/ML", "Distributed Systems", "Open Source"],
-    strongProjects: [
-      {
-        name: "MeshPay Tower",
-        description: "Offline-first deferred payment settlement system for distributed environments.",
-        technologies: ["Java", "Spring Boot", "PostgreSQL", "Docker"],
-        status: "Active",
-      },
-      {
-        name: "GrowEasy AI Lab",
-        description: "Full-stack AI platform for SMB growth automation with LLM recommendations.",
-        technologies: ["Python", "FastAPI", "OpenAI", "React"],
-        status: "Active",
-      },
-    ],
-    technologies: [
-      "TypeScript",
-      "React",
-      "Next.js",
-      "Node.js",
-      "Python",
-      "Java",
-      "Spring Boot",
-      "PostgreSQL",
-      "Docker",
-      "Three.js",
-    ],
-    githubActivity: {
-      repositories: 15,
-      commits: 500,
-      languages: ["TypeScript", "Python", "Java", "JavaScript"],
-    },
-    openSource: true,
-    aiBackendExperience: true,
-  };
+function Metric({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="border border-[var(--border)] bg-[var(--surface-muted)] p-2">
+      <p className="font-mono text-[8px] tracking-[0.1em] text-[var(--foreground-muted)] uppercase">{label}</p>
+      <p className="font-mono text-[12px] font-semibold text-[var(--foreground)] tabular-nums">{value}</p>
+    </div>
+  );
 }
