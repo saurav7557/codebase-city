@@ -4,8 +4,15 @@ import { prisma } from "@/lib/prisma";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
-type RecruiterProjects = Awaited<ReturnType<typeof prisma.project.findMany>>;
-type RecruiterProject = RecruiterProjects[number];
+import { Prisma } from "@prisma/client";
+
+type RecruiterProject = Prisma.ProjectGetPayload<{
+  include: {
+    technologies: { include: { technology: true } };
+    district: { select: { name: true; type: true } };
+  };
+}>;
+
 type RecruiterProjectTechnology = RecruiterProject["technologies"][number];
 type RecruiterRepository = Awaited<ReturnType<typeof prisma.gitHubRepository.findMany>>[number];
 type RecruiterDistrict = Awaited<ReturnType<typeof prisma.district.findMany>>[number];
