@@ -147,7 +147,7 @@ export function AskCityAI({
                 Ask about the portfolio
               </p>
               <p className="text-sm text-[var(--foreground-muted)]">
-                Examples: "What technologies are used here?" "Which projects use Spring Boot?"
+                Examples: &quot;What technologies are used here?&quot; &quot;Which projects use Spring Boot?&quot;
               </p>
             </div>
           )}

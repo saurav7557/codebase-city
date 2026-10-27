@@ -5,7 +5,7 @@ import { Canvas } from "@react-three/fiber";
 import { Environment, AdaptiveDpr } from "@react-three/drei";
 
 import { cityData } from "@/data/city";
-import type { CityBuilding } from "@/types/city";
+import type { CityBuilding, CityData } from "@/types/city";
 
 import { CityCamera } from "./CityCamera";
 import { CityGround } from "./CityGround";
@@ -16,10 +16,24 @@ import { CityDistrict } from "./CityDistrict";
 function SceneContent({
   selectedId,
   onSelect,
+  data,
 }: {
   selectedId: string | null;
   onSelect: (b: CityBuilding) => void;
+  data?: CityData | null;
 }) {
+  const isValidCityData =
+    data != null &&
+    typeof data === "object" &&
+    Array.isArray(data.districts) &&
+    data.districts.length > 0 &&
+    Array.isArray(data.buildings) &&
+    data.buildings.length > 0;
+
+  const activeData = isValidCityData ? data : cityData;
+  const districts = Array.isArray(activeData.districts) ? activeData.districts : cityData.districts;
+  const buildings = Array.isArray(activeData.buildings) ? activeData.buildings : cityData.buildings;
+
   return (
     <>
       {/* Lighting */}
@@ -33,7 +47,7 @@ function SceneContent({
         shadow-mapSize-height={2048}
         shadow-camera-far={80}
         shadow-camera-left={-30}
-        shadow-camera-right={-30}
+        shadow-camera-right={30}
         shadow-camera-top={30}
         shadow-camera-bottom={-30}
       />
@@ -53,12 +67,12 @@ function SceneContent({
       <CityRoads />
 
       {/* Districts */}
-      {cityData.districts.map((district) => (
+      {districts.map((district) => (
         <CityDistrict key={district.id} district={district} />
       ))}
 
       {/* Buildings — data-driven */}
-      {cityData.buildings.map((building) => (
+      {buildings.map((building) => (
         <CityBuildingMesh
           key={building.id}
           building={building}
@@ -76,9 +90,10 @@ function SceneContent({
 interface CitySceneProps {
   selectedId: string | null;
   onSelect: (building: CityBuilding | null) => void;
+  data?: CityData | null;
 }
 
-export function CityScene({ selectedId, onSelect }: CitySceneProps) {
+export function CityScene({ selectedId, onSelect, data }: CitySceneProps) {
   const handleSelect = useCallback(
     (building: CityBuilding) => {
       onSelect(selectedId === building.id ? null : building);
@@ -112,7 +127,11 @@ export function CityScene({ selectedId, onSelect }: CitySceneProps) {
         <fog attach="fog" args={["#f0ece0", 60, 90]} />
 
         <Suspense fallback={null}>
-          <SceneContent selectedId={selectedId} onSelect={handleSelect} />
+          <SceneContent
+            selectedId={selectedId}
+            onSelect={handleSelect}
+            data={data}
+          />
         </Suspense>
 
         <AdaptiveDpr pixelated />

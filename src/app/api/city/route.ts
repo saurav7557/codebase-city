@@ -15,11 +15,20 @@ export async function GET(): Promise<Response> {
   ]);
 
   return Response.json({
-    ...cityData,
+    districts: cityData.districts,
+    buildings: cityData.buildings,
+    metrics: {
+      projects: projects.length,
+      repositories: projects.filter(p => p.githubUrl).length,
+      technologies: techCount,
+      districts: districts.length,
+      engineeringEvents: events.length,
+      aiAnalyses: analysisCount,
+    },
     projects: projects.length,
     repositories: projects.filter(p => p.githubUrl).length,
     technologies: techCount,
-    districts: districts.length,
+    districtCount: districts.length,
     engineeringEvents: events.length,
     aiAnalyses: analysisCount,
   });

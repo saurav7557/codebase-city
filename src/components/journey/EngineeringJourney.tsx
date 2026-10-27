@@ -120,7 +120,7 @@ export function EngineeringJourney({ isOpen, onClose }: EngineeringJourneyProps)
                 {/* Vertical line */}
                 <div className="absolute left-4 top-0 bottom-0 w-px bg-[var(--border)]" aria-hidden="true" />
 
-                {phases.map((phase, index) => (
+                {phases.map((phase) => (
                   <div key={phase.id} className="relative pl-10 pb-8 last:pb-0">
                     {/* Timeline dot */}
                     <div
@@ -228,6 +228,14 @@ export function EngineeringJourney({ isOpen, onClose }: EngineeringJourneyProps)
                   BACK TO CITY
                 </SystemButton>
               </div>
+            </div>
+          )}
+
+          {!loading && !error && phases.length === 0 && (
+            <div className="text-center py-8">
+              <p className="font-mono text-[10px] text-[var(--border-strong)]">
+                -- No journey milestones recorded
+              </p>
             </div>
           )}
         </div>

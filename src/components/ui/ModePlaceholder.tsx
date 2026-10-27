@@ -12,13 +12,28 @@ const MODE_CONTENT: Record<
   Exclude<NavMode, "explore">,
   { title: string; description: string; status: string }
 > = {
+  projects: {
+    title: "Projects",
+    description: "Detailed portfolio project dossiers and technical specifications.",
+    status: "Module Active",
+  },
+  systems: {
+    title: "Systems",
+    description: "Architectural topology and distributed system implementations.",
+    status: "Module Active",
+  },
+  github: {
+    title: "GitHub",
+    description: "Source control repositories and code metrics.",
+    status: "Module Active",
+  },
   ai: {
     title: "City AI",
     description:
       "Conversational interface for exploring systems, architecture decisions, and project context. Coming in a future phase.",
     status: "Module Pending",
   },
-   recruiter: {
+  recruiter: {
     title: "Recruiter Mode",
     description:
       "Structured view for hiring teams — role fit, project highlights, and interview scheduling. Coming in a future phase.",

@@ -99,7 +99,7 @@ export const cityData: CityData = {
       description:
         "Full-stack AI platform for SMB growth automation. Combines LLM-powered recommendations with real-time analytics and CRM integrations.",
       status: "active",
-      position: [9, 0, -6],
+      position: [8.5, 0, -7.5],
       height: 3.0,
       color: "#8b5cf6",
       accentColor: "#c4b5fd",
@@ -113,7 +113,7 @@ export const cityData: CityData = {
       description:
         "Computer vision pipeline for detecting unauthorized use of intellectual property across digital media. Combines perceptual hashing with deep feature matching.",
       status: "active",
-      position: [11, 0, -4],
+      position: [9.5, 0, -4.0],
       height: 2.2,
       color: "#7c3aed",
       accentColor: "#ddd6fe",
@@ -161,7 +161,7 @@ export const cityData: CityData = {
       description:
         "A monument to milestones: shipped products, engineering wins, technical leadership moments, and lessons learned at scale.",
       status: "active",
-      position: [0, 0, -10],
+      position: [0, 0, -9.5],
       height: 2.0,
       color: "#f43f5e",
       accentColor: "#fda4af",

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { SystemButton } from "@/components/ui/SystemButton";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -53,27 +53,7 @@ export function AIIntelligencePanel({ isOpen, onClose, onOpenAskAI }: AIIntellig
   const [error, setError] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
-  useEffect(() => {
-    if (!isOpen) return;
-
-    fetchMetrics();
-    fetchAnalyses();
-    fetchProviderStatus();
-  }, [isOpen]);
-
-  const fetchMetrics = async () => {
-    try {
-      const response = await fetch("/api/city");
-      if (!response.ok) throw new Error("Failed to fetch metrics");
-      const data = await response.json();
-      setMetrics(data);
-    } catch (err) {
-      console.error("Failed to fetch metrics:", err);
-      setError("Failed to load portfolio metrics");
-    }
-  };
-
-  const fetchAnalyses = async () => {
+  const fetchAnalyses = useCallback(async () => {
     try {
       const response = await fetch("/api/ai/analyses");
       if (!response.ok) {
@@ -89,20 +69,78 @@ export function AIIntelligencePanel({ isOpen, onClose, onOpenAskAI }: AIIntellig
       console.error("Failed to fetch analyses:", err);
       setAnalyses([]);
     }
-  };
+  }, []);
 
-  const fetchProviderStatus = async () => {
-    try {
-      const response = await fetch("/api/ai/status");
-      if (!response.ok) throw new Error("Failed to fetch provider status");
-      const data = await response.json();
-      setProviderStatus(data);
-      setAnalysisStatus(data.configured ? "ready" : "unavailable");
-    } catch (err) {
-      console.error("Failed to fetch provider status:", err);
-      setAnalysisStatus("error");
+  useEffect(() => {
+    if (!isOpen) return;
+
+    let isSubscribed = true;
+
+    async function loadPanelData() {
+      try {
+        const [cityRes, analysesRes, statusRes] = await Promise.all([
+          fetch("/api/city"),
+          fetch("/api/ai/analyses"),
+          fetch("/api/ai/status"),
+        ]);
+
+        if (!isSubscribed) return;
+
+        if (cityRes.ok) {
+          const rawData = await cityRes.json();
+          const districtCount =
+            typeof rawData.districts === "number"
+              ? rawData.districts
+              : Array.isArray(rawData.districts)
+              ? rawData.districts.length
+              : (rawData.metrics?.districts ?? rawData.districtCount ?? 0);
+
+          if (isSubscribed) {
+            setMetrics(
+              rawData.metrics ?? {
+                projects: rawData.projects ?? 0,
+                repositories: rawData.repositories ?? 0,
+                technologies: rawData.technologies ?? 0,
+                districts: districtCount,
+                engineeringEvents: rawData.engineeringEvents ?? 0,
+                aiAnalyses: rawData.aiAnalyses ?? 0,
+              }
+            );
+          }
+        } else if (isSubscribed) {
+          setError("Failed to load portfolio metrics");
+        }
+
+        if (analysesRes.ok) {
+          const data = await analysesRes.json();
+          if (isSubscribed) setAnalyses(data.analyses || []);
+        } else if (isSubscribed) {
+          setAnalyses([]);
+        }
+
+        if (statusRes.ok) {
+          const data = await statusRes.json();
+          if (isSubscribed) {
+            setProviderStatus(data);
+            setAnalysisStatus(data.configured ? "ready" : "unavailable");
+          }
+        } else if (isSubscribed) {
+          setAnalysisStatus("error");
+        }
+      } catch (err) {
+        if (!isSubscribed) return;
+        console.error("Failed to load AI panel data:", err);
+        setError("Failed to load portfolio metrics");
+        setAnalysisStatus("error");
+      }
     }
-  };
+
+    loadPanelData();
+
+    return () => {
+      isSubscribed = false;
+    };
+  }, [isOpen]);
 
   const handleRunAnalysis = async () => {
     if (!providerStatus?.configured) {

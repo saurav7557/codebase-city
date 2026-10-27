@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { CityScene } from "@/components/city/CityScene";
 import type { NavMode } from "@/components/ui/SystemHeader";
-import type { CityBuilding, EngineeringEvent } from "@/types/city";
+import type { CityBuilding, CityData, EngineeringEvent } from "@/types/city";
 
 // UI Shell — Stage 1
 import { CityNavigation } from "@/components/ui/CityNavigation";
@@ -15,11 +15,13 @@ import { SystemStatus } from "@/components/ui/SystemStatus";
 
 // Panels still in use
 import { BuildingInfoPanel } from "@/components/ui/BuildingInfoPanel";
-import { ModePlaceholder } from "@/components/ui/ModePlaceholder";
 import { AIIntelligencePanel } from "@/components/ai/AIIntelligencePanel";
 import { AskCityAI } from "@/components/ai/AskCityAI";
 import { RecruiterMode } from "@/components/recruiter/RecruiterMode";
 import { EngineeringJourney } from "@/components/journey/EngineeringJourney";
+import { ProjectsMode } from "@/components/projects/ProjectsMode";
+import { SystemsMode } from "@/components/systems/SystemsMode";
+import { GitHubMode } from "@/components/github/GitHubMode";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // CityExperience — Root composition layer
@@ -46,6 +48,7 @@ export function CityExperience() {
   const [askAIPanelOpen, setAskAIPanelOpen] = useState(false);
   const [journeyOpen, setJourneyOpen] = useState(false);
   const [engineeringEvents, setEngineeringEvents] = useState<EngineeringEvent[] | null>(null);
+  const [cityDataState, setCityDataState] = useState<CityData | null>(null);
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncStatus, setSyncStatus] = useState<string | null>(null);
 
@@ -60,6 +63,36 @@ export function CityExperience() {
     tick();
     const id = setInterval(tick, 60_000);
     return () => clearInterval(id);
+  }, []);
+
+  // Fetch dynamic city data (falls back to static cityData in CityScene if unavailable)
+  useEffect(() => {
+    let isSubscribed = true;
+    async function loadCityData() {
+      try {
+        const response = await fetch("/api/city");
+        if (response.ok && isSubscribed) {
+          const data = await response.json();
+          if (
+            Array.isArray(data.districts) &&
+            data.districts.length > 0 &&
+            Array.isArray(data.buildings) &&
+            data.buildings.length > 0
+          ) {
+            setCityDataState({
+              districts: data.districts,
+              buildings: data.buildings,
+            });
+          }
+        }
+      } catch (error) {
+        console.warn("Using baseline static city data:", error);
+      }
+    }
+    loadCityData();
+    return () => {
+      isSubscribed = false;
+    };
   }, []);
 
   // Fetch engineering events for the log
@@ -87,8 +120,21 @@ export function CityExperience() {
       if (response.ok) {
         const data = await response.json();
         setSyncStatus(`Synced: ${data.summary.buildingsCreated} new buildings`);
-        // Refresh city data after sync
-        window.location.reload();
+        const cityRes = await fetch("/api/city");
+        if (cityRes.ok) {
+          const freshData = await cityRes.json();
+          if (
+            Array.isArray(freshData.districts) &&
+            freshData.districts.length > 0 &&
+            Array.isArray(freshData.buildings) &&
+            freshData.buildings.length > 0
+          ) {
+            setCityDataState({
+              districts: freshData.districts,
+              buildings: freshData.buildings,
+            });
+          }
+        }
       } else {
         setSyncStatus("Sync failed");
       }
@@ -122,6 +168,7 @@ export function CityExperience() {
   const handleCloseMode = useCallback(() => {
     setNavMode("explore");
     setAiPanelOpen(false);
+    setJourneyOpen(false);
   }, []);
 
   const handleExploreSystem = useCallback((building: CityBuilding) => {
@@ -165,6 +212,7 @@ export function CityExperience() {
           <CityScene
             selectedId={selectedBuilding?.id ?? null}
             onSelect={handleSelect}
+            data={cityDataState}
           />
 
           {/* ── BOTTOM overlay row ──────────────────────────────── */}
@@ -186,6 +234,32 @@ export function CityExperience() {
               onClose={handleClosePanel}
               onExploreSystem={handleExploreSystem}
               onAskCityAI={handleAskCityAI}
+            />
+          )}
+
+          {/* ── Projects Mode (02 PROJECTS) ─────────────────────── */}
+          {navMode === "projects" && (
+            <ProjectsMode
+              isOpen={navMode === "projects"}
+              onClose={handleCloseMode}
+              onSelectBuilding={handleSelect}
+            />
+          )}
+
+          {/* ── Systems Mode (03 SYSTEMS) ────────────────────────── */}
+          {navMode === "systems" && (
+            <SystemsMode
+              isOpen={navMode === "systems"}
+              onClose={handleCloseMode}
+              onSelectBuilding={handleSelect}
+            />
+          )}
+
+          {/* ── GitHub Mode (04 GITHUB) ─────────────────────────── */}
+          {navMode === "github" && (
+            <GitHubMode
+              isOpen={navMode === "github"}
+              onClose={handleCloseMode}
             />
           )}
 

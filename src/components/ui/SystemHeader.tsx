@@ -2,7 +2,14 @@
 
 import { SystemButton } from "./SystemButton";
 
-export type NavMode = "explore" | "ai" | "recruiter" | "journey";
+export type NavMode =
+  | "explore"
+  | "projects"
+  | "systems"
+  | "github"
+  | "journey"
+  | "ai"
+  | "recruiter";
 
 interface SystemHeaderProps {
   activeMode: NavMode;

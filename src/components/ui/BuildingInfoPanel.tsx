@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { CityBuilding } from "@/types/city";
+import { ArchitecturalImage } from "./ArchitecturalImage";
 import {
   getDistrictById,
   STATUS_CONFIG,
@@ -92,6 +93,7 @@ export function BuildingInfoPanel({
   const districtName = district?.name ?? building.district.replace("-", " ");
   const displayData = projectData || {
     name: building.name,
+    slug: building.id,
     description: building.description,
     category: building.type,
     status: building.status,
@@ -173,6 +175,40 @@ export function BuildingInfoPanel({
               <p className="font-mono text-[10px] text-[var(--status-building)]">
                 {error}
               </p>
+            )}
+
+            {/* Visual Artifact / Image Preview */}
+            {!loading && !error && (
+              <div className="mb-3">
+                {building.id === "saurav-hq" ? (
+                  <div className="flex items-center gap-3 p-2 border border-[var(--border)] bg-[var(--surface-muted)]">
+                    <ArchitecturalImage
+                      src="/images/profile.jpg"
+                      alt="Saurav Kumar"
+                      type="profile"
+                      expectedPath="public/images/profile.jpg"
+                      className="w-12 h-12 shrink-0"
+                    />
+                    <div className="min-w-0 flex-1">
+                      <p className="font-mono text-[8px] tracking-[0.2em] text-[var(--foreground-muted)] uppercase">
+                        PORTFOLIO HEADQUARTERS
+                      </p>
+                      <p className="font-mono text-[9px] font-semibold text-[var(--foreground)] uppercase">
+                        SAURAV KUMAR · CORE
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <ArchitecturalImage
+                    src={`/images/projects/${displayData.slug || building.id}.png`}
+                    alt={displayData.name}
+                    type="project"
+                    caption={displayData.name}
+                    expectedPath={`public/images/projects/${displayData.slug || building.id}.png`}
+                    aspectRatio="16/9"
+                  />
+                )}
+              </div>
             )}
 
             {/* Description */}

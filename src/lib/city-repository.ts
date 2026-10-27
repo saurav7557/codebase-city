@@ -1,29 +1,38 @@
 import "server-only";
 
 import type { CityBuilding, CityData, CityDistrict } from "@/types/city";
+import { cityData } from "@/data/city";
 
 import { prisma } from "./prisma";
 
 export async function getCityData(): Promise<CityData> {
-  const [districts, buildings] = await prisma.$transaction([
-    prisma.district.findMany({ orderBy: { id: "asc" } }),
-    prisma.cityBuilding.findMany({
-      include: {
-        project: {
-          include: {
-            technologies: { include: { technology: true } },
+  try {
+    const [districts, buildings] = await prisma.$transaction([
+      prisma.district.findMany({ orderBy: { id: "asc" } }),
+      prisma.cityBuilding.findMany({
+        include: {
+          project: {
+            include: {
+              technologies: { include: { technology: true } },
+            },
           },
+          technologies: { include: { technology: true } },
         },
-        technologies: { include: { technology: true } },
-      },
-      orderBy: { id: "asc" },
-    }),
-  ]);
+        orderBy: { id: "asc" },
+      }),
+    ]);
 
-  return {
-    districts: districts.map(toCityDistrict),
-    buildings: buildings.map(toCityBuilding),
-  };
+    if (districts.length > 0 && buildings.length > 0) {
+      return {
+        districts: districts.map(toCityDistrict),
+        buildings: buildings.map(toCityBuilding),
+      };
+    }
+  } catch (error) {
+    console.warn("Database unavailable for getCityData, using canonical cityData:", error);
+  }
+
+  return cityData;
 }
 
 export async function getDistricts() {

@@ -10,19 +10,19 @@ import type { NavMode } from "@/components/ui/SystemHeader";
 
 interface NavItem {
   index: string;
-  id: NavMode | "projects" | "systems" | "github" | "journey";
+  id: NavMode;
   label: string;
   available: boolean;
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { index: "01", id: "explore",   label: "EXPLORE",   available: true  },
-  { index: "02", id: "projects",  label: "PROJECTS",  available: false },
-  { index: "03", id: "systems",   label: "SYSTEMS",   available: false },
-  { index: "04", id: "github",    label: "GITHUB",    available: false },
-  { index: "05", id: "journey",   label: "JOURNEY",   available: true  },
-  { index: "06", id: "ai",        label: "AI",        available: true  },
-  { index: "07", id: "recruiter", label: "RECRUITER", available: true  },
+  { index: "01", id: "explore",   label: "EXPLORE",   available: true },
+  { index: "02", id: "projects",  label: "PROJECTS",  available: true },
+  { index: "03", id: "systems",   label: "SYSTEMS",   available: true },
+  { index: "04", id: "github",    label: "GITHUB",    available: true },
+  { index: "05", id: "journey",   label: "JOURNEY",   available: true },
+  { index: "06", id: "ai",        label: "AI",        available: true },
+  { index: "07", id: "recruiter", label: "RECRUITER", available: true },
 ];
 
 interface CityNavigationProps {
@@ -80,16 +80,14 @@ export function CityNavigation({
       {/* ── Nav items ─────────────────────────────────────────────── */}
       <ul className="flex-1 py-2" role="list">
         {NAV_ITEMS.map((item) => {
-          // Only NavMode values are routable; others are future stubs
-          const isRoutable =
-            item.available && ["explore", "journey", "ai", "recruiter"].includes(item.id);
+          const isRoutable = item.available;
           const isActive = activeMode === item.id;
 
           return (
             <li key={item.id}>
               <button
                 onClick={() => {
-                  if (isRoutable) onModeChange(item.id as NavMode);
+                  if (isRoutable) onModeChange(item.id);
                 }}
                 disabled={!isRoutable}
                 aria-current={isActive ? "page" : undefined}
